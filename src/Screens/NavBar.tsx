@@ -3,31 +3,11 @@ import {
   faChevronDown,
   faChevronUp,
   faToolbox,
-  faEarthAfrica,
   IconDefinition,
-  faMapLocationDot,
-  faPeopleRoof,
-  faTrowelBricks,
-  faBuildingColumns,
-  faEnvelopesBulk,
-  faPowerOff,
-  faCopyright,
-  faCube,
-  faMicrochip,
-  faHeart,
-  faUsers,        // Icono para "Area"
-  faBriefcase,    // Icono para "Cargo"
-  faLayerGroup,   // Icono para "Provincia"
-  faGlobeAfrica,  // Icono para "Distrito" (cambié a un ícono de globo terráqueo)
-  faMapMarkerAlt, // Icono para "Sede" (cambié a un ícono de marcador de mapa)
-  faBuilding,     // Icono para "SubArea"
-  faLaptop,       // Icono para "Regimen Laboral"
-  faTools,        // Icono para "Condición" (cambié a un ícono de herramientas)
-  faUser,         // Icono para "Persona" (cambié a un ícono de usuario)
-  faUserCog,      // Icono para "Usuario" (cambié a un ícono de usuario con engranaje)
+  faUser,
+  faUserCog,
   faUserShield,
-  faHardHat,
-  faGavel
+  faUserNurse, faMoneyCheckAlt, faClipboardList,
 } from "@fortawesome/free-solid-svg-icons";
 import { Collapse, Divider, List, ListItemButton, ListItemIcon, ListItemText, Tooltip } from "@mui/material";
 import { NavLink } from "react-router-dom";
@@ -93,7 +73,6 @@ function Navbar() {
           open={isCatMantenimiento}
         />
         <Collapse in={isCatMantenimiento} timeout="auto" unmountOnExit>
-
           <ItemSubCategory
             link="/mantenimiento/usuarios"
             title="Usuario"
@@ -112,22 +91,22 @@ function Navbar() {
           <ItemSubCategory
             link="/mantenimiento/trabajadores"
             title="Trabajador"
-            icon={faGavel} // Puedes cambiar faHardHat por otro ícono que prefieras
+            icon={faUserNurse} // Cambié faGavel por faUserNurse
           />
           <ItemSubCategory
             link="/mantenimiento/procedimientos"
             title="Procedimiento"
-            icon={faGavel} // Puedes cambiar faHardHat por otro ícono que prefieras
+            icon={faClipboardList} // Cambié faGavel por faClipboardList
           />
           <ItemSubCategory
             link="/mantenimiento/mpagos"
             title="Metodo de Pago"
-            icon={faGavel} // Puedes cambiar faHardHat por otro ícono que prefieras
+            icon={faMoneyCheckAlt} // Cambié faGavel por faMoneyCheckAlt
           />
           <ItemSubCategory
             link="/mantenimiento/consultas"
             title="Consultas"
-            icon={faGavel} // Puedes cambiar faHardHat por otro ícono que prefieras
+            icon={faClipboardList} // Cambié faGavel por faClipboardList
           />
         </ Collapse>
       </>

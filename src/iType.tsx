@@ -66,6 +66,7 @@ interface iLConsulta{
   ID_TRABAJADOR : string;
   DOCTORA: string;
   ID_CLIENTE: string;
+  NOMBRES: string;
   NOMBRE_CLIENTE: string;
   APPATERNO: string;
   APMATERNO: string;

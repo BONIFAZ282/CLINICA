@@ -13,7 +13,6 @@ import { Autocomplete } from '@mui/material';
 
 function CrearConsulta() {
 
-
   const [formValues, setFormValues] = useState({
     ID_CONSULTA: "0",
     OBSERVACION: "",
