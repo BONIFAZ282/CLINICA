@@ -1,0 +1,1022 @@
+-- phpMyAdmin SQL Dump
+-- version 5.2.1
+-- https://www.phpmyadmin.net/
+--
+-- Servidor: localhost:3307
+-- Tiempo de generación: 29-01-2024 a las 05:16:15
+-- Versión del servidor: 8.0.30
+-- Versión de PHP: 8.1.10
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Base de datos: `clinica`
+--
+
+DELIMITER $$
+--
+-- Procedimientos
+--
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PROC_CLIENTE_CU` (`_ID_CLIENTE` INT, `_DOCUMENTO` CHAR(8), `_NOMBRES` VARCHAR(100), `_APMATERNO` VARCHAR(50), `_APPATERNO` VARCHAR(50), `_CELULAR` CHAR(9))   BEGIN
+    -- MENSAJE A LA INTERFAZ
+    DECLARE __ICON VARCHAR(10) DEFAULT 'error';
+    DECLARE __MESSAGE_TEXT VARCHAR(300) DEFAULT 'HA OCURRIDO UN ERROR';
+    DECLARE __STATUS_CODE CHAR(3) DEFAULT '501';
+
+    -- COMPROBAR QUE EL NOMBRE NO EXISTA
+    DECLARE __EXISTS_NOMBRE INT DEFAULT 0;
+    SELECT ID_CLIENTE INTO __EXISTS_NOMBRE
+    FROM CLIENTE
+    WHERE ID_CLIENTE <> _ID_CLIENTE AND
+    DOCUMENTO = _DOCUMENTO AND ESTADO <> 0;
+
+
+    IF __EXISTS_NOMBRE = 0 THEN
+        IF _ID_CLIENTE = 0 THEN
+            INSERT INTO CLIENTE
+                (DOCUMENTO, NOMBRES, APMATERNO, APPATERNO, CELULAR, ESTADO) VALUES
+                (_DOCUMENTO, _NOMBRES, _APMATERNO, _APPATERNO, _CELULAR, '1');
+
+                -- MENSAJE
+                SET __ICON = 'success';
+                SET __MESSAGE_TEXT = 'REGISTRO EXITOSO';
+                SET __STATUS_CODE = '201';
+        ELSE
+            UPDATE CLIENTE
+                SET 
+                    DOCUMENTO = _DOCUMENTO,
+                    NOMBRES = _NOMBRES,
+                    APMATERNO = _APMATERNO,
+                    APPATERNO = _APPATERNO,
+                    CELULAR = _CELULAR
+                WHERE
+                    ID_CLIENTE = _ID_CLIENTE;
+
+                -- MENSAJE
+                SET __ICON = 'success';
+                SET __MESSAGE_TEXT = 'DATOS ACTUALIZADOS';
+                SET __STATUS_CODE = '202';
+        END IF;
+    ELSE
+         -- MENSAJE
+        SET __ICON = 'warning';
+        SET __MESSAGE_TEXT = '¡EL NOMBRE YA SE ENCUENTRA EN USO!';
+        SET __STATUS_CODE = '200';
+    END IF;
+    SELECT __ICON AS 'ICON', __MESSAGE_TEXT AS 'MESSAGE_TEXT', __STATUS_CODE AS 'STATUS_CODE';
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PROC_CLIENTE_DELETE` (`_ID_CLIENTE` INT)   BEGIN
+    -- MENSAJES A LA INTERFAZ
+    DECLARE __ICON VARCHAR(10) DEFAULT 'error';
+    DECLARE __MESSAGE_TEXT VARCHAR(300) DEFAULT 'HA OCURRIDO UN ERROR';
+    DECLARE __STATUS_CODE CHAR(3) DEFAULT '501';
+
+    -- SABER SI NO SE ENCUENTRA O YA ESTA ELIMINADO
+    DECLARE __NO_EXISTS INT DEFAULT 0;
+
+    SELECT IF(ESTADO <> 0, ID_CLIENTE, 0) INTO __NO_EXISTS FROM CLIENTE
+    WHERE ID_CLIENTE = _ID_CLIENTE;
+
+    IF __NO_EXISTS = 0 THEN 
+        -- MENSAJE
+        SET __ICON = 'warning';
+        SET __MESSAGE_TEXT = 'EL ELEMENTO NO EXISTE O YA HA SIDO ELIMINADO';
+        SET __STATUS_CODE = '200';
+    ELSE
+        UPDATE CLIENTE
+            SET ESTADO = '0'
+            WHERE ID_CLIENTE = _ID_CLIENTE;
+        -- MENSAJE
+            SET __ICON = 'success';
+            SET __MESSAGE_TEXT = 'ELEMENTO ELIMINADO';
+            SET __STATUS_CODE = '202';
+    END IF;
+    SELECT __ICON AS 'ICON', __MESSAGE_TEXT AS 'MESSAGE_TEXT', __STATUS_CODE AS 'STATUS_CODE';
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PROC_CLIENTE_LISTAR` ()   BEGIN
+  SELECT * FROM CLIENTE;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PROC_CONSULTA_CU` (IN `_ID_CONSULTA` INT, IN `_OBSERVACION` VARCHAR(255), IN `_FECHA` DATE, IN `_ID_TRABAJADOR` INT, IN `_ID_CLIENTE` INT, IN `_ID_PROCEDIMIENTO` INT, IN `_ID_TIPO_PAGO` INT)   BEGIN
+    DECLARE __ICON VARCHAR(10) DEFAULT 'error';
+    DECLARE __MESSAGE_TEXT VARCHAR(300) DEFAULT 'HA OCURRIDO UN ERROR';
+    DECLARE __STATUS_CODE CHAR(3) DEFAULT '501';
+    
+    IF _ID_CONSULTA = 0 THEN
+        -- Crear nueva consulta
+        INSERT INTO consulta (OBSERVACION, FECHA, ID_TRABAJADOR, ID_CLIENTE, ID_PROCEDIMIENTO, ID_TIPO_PAGO, ESTADO) 
+        VALUES (_OBSERVACION, _FECHA, _ID_TRABAJADOR, _ID_CLIENTE, _ID_PROCEDIMIENTO, _ID_TIPO_PAGO, '1');
+        
+        SET __ICON = 'success';
+        SET __MESSAGE_TEXT = 'Consulta creada exitosamente';
+        SET __STATUS_CODE = '201';
+    ELSE
+        -- Actualizar consulta existente
+        UPDATE consulta 
+        SET 
+            OBSERVACION = _OBSERVACION,
+            FECHA = _FECHA,
+            ID_TRABAJADOR = _ID_TRABAJADOR,
+            ID_CLIENTE = _ID_CLIENTE,
+            ID_PROCEDIMIENTO = _ID_PROCEDIMIENTO,
+            ID_TIPO_PAGO = _ID_TIPO_PAGO
+        WHERE ID_CONSULTA = _ID_CONSULTA;
+        
+        SET __ICON = 'success';
+        SET __MESSAGE_TEXT = 'Consulta actualizada exitosamente';
+        SET __STATUS_CODE = '202';
+    END IF;
+    
+    SELECT __ICON AS 'ICON', __MESSAGE_TEXT AS 'MESSAGE_TEXT', __STATUS_CODE AS 'STATUS_CODE';
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PROC_CONSULTA_DELETE` (`_ID_CONSULTA` INT)   BEGIN
+    -- MENSAJES A LA INTERFAZ
+    DECLARE __ICON VARCHAR(10) DEFAULT 'error';
+    DECLARE __MESSAGE_TEXT VARCHAR(300) DEFAULT 'HA OCURRIDO UN ERROR';
+    DECLARE __STATUS_CODE CHAR(3) DEFAULT '501';
+
+    -- SABER SI NO SE ENCUENTRA O YA ESTA ELIMINADO
+    DECLARE __NO_EXISTS INT DEFAULT 0;
+
+    SELECT IF(ESTADO <> 0, ID_CONSULTA , 0) INTO __NO_EXISTS FROM CONSULTA
+    WHERE ID_CONSULTA  = _ID_CONSULTA ;
+
+    IF __NO_EXISTS = 0 THEN 
+        -- MENSAJE
+        SET __ICON = 'warning';
+        SET __MESSAGE_TEXT = 'EL ELEMENTO NO EXISTE O YA HA SIDO ELIMINADO';
+        SET __STATUS_CODE = '200';
+    ELSE
+        UPDATE CONSULTA
+            SET ESTADO = '0'
+            WHERE ID_CONSULTA  = _ID_CONSULTA ;
+        -- MENSAJE
+            SET __ICON = 'success';
+            SET __MESSAGE_TEXT = 'ELEMENTO ELIMINADO';
+            SET __STATUS_CODE = '202';
+    END IF;
+    SELECT __ICON AS 'ICON', __MESSAGE_TEXT AS 'MESSAGE_TEXT', __STATUS_CODE AS 'STATUS_CODE';
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PROC_CONSULTA_LIST` ()   BEGIN
+    -- Puedes definir parámetros si es necesario
+    -- DECLARE parametro INT;
+
+    -- Inicio del procedimiento
+    SELECT
+        C.ID_CONSULTA,
+        T.ID_TRABAJADOR,
+        T.NOMBRES AS DOCTORA,
+        CL.ID_CLIENTE,
+        CL.NOMBRES AS NOMBRE_CLIENTE,
+        CL.APPATERNO,
+        CL.APMATERNO,
+        PR.ID_PROCEDIMIENTO,
+        PR.NOM_PROCEDIMIENTO,
+        C.OBSERVACION,
+        TP.ID_TIPO_PAGO,
+        TP.DESCRIPCION AS TIPO_PAGO,
+        PR.PRECIO,
+        C.FECHA AS "FECHA_CONSULTA",
+        C.ESTADO
+    FROM
+        CONSULTA C
+    INNER JOIN TRABAJADOR T ON C.ID_TRABAJADOR = T.ID_TRABAJADOR
+    INNER JOIN CLIENTE CL ON C.ID_CLIENTE = CL.ID_CLIENTE
+    INNER JOIN PROCEDIMIENTO PR ON C.ID_PROCEDIMIENTO = PR.ID_PROCEDIMIENTO
+    INNER JOIN TIPO_PAGO TP ON C.ID_TIPO_PAGO = TP.ID_TIPO_PAGO
+        ORDER BY C.ID_CONSULTA ASC; -- Ordenar por ID_CONSULTA ascendente
+
+
+    -- Puedes realizar más operaciones dentro del procedimiento si es necesario
+
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PROC_INGRESOS_TOTAL` ()   BEGIN
+    -- Declarar la variable para almacenar la suma total
+    DECLARE TOTAL_PROCEDIMIENTO DECIMAL(10, 2);
+
+    -- Inicializar la variable a cero
+    SET TOTAL_PROCEDIMIENTO = 0;
+
+    -- Obtener la suma total del campo "TOTAL" de la tabla "procedimiento"
+    SELECT SUM(P.TOTAL) INTO TOTAL_PROCEDIMIENTO
+    FROM CONSULTA AS C
+    INNER JOIN PROCEDIMIENTO AS P ON C.ID_PROCEDIMIENTO = P.ID_PROCEDIMIENTO;
+
+    -- Mostrar la suma total
+    SELECT TOTAL_PROCEDIMIENTO AS 'SUMA_TOTAL';
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PROC_INGRESOS_TOTAL_TRABAJADOR` (IN `trabajador_id_param` INT)   BEGIN
+    -- Declarar las variables para almacenar el ID_TRABAJADOR y la suma total
+    DECLARE id_trabajador_result INT;
+    DECLARE nom_trabajador_result VARCHAR(100);
+    DECLARE total_procedimiento DECIMAL(10, 2);
+
+    -- Obtener el ID_TRABAJADOR y NOM_TRABAJADOR del trabajador proporcionado
+    SELECT ID_TRABAJADOR, CONCAT(NOMBRES, ' ', APPATERNO, ' ', APMATERNO)
+    INTO id_trabajador_result, nom_trabajador_result
+    FROM trabajador
+    WHERE ID_TRABAJADOR = trabajador_id_param;
+
+    -- Obtener la suma total del campo "TOTAL" para el ID_TRABAJADOR proporcionado
+    SELECT SUM(P.TOTAL) INTO total_procedimiento
+    FROM consulta AS C
+    INNER JOIN procedimiento AS P ON C.ID_PROCEDIMIENTO = P.ID_PROCEDIMIENTO
+    WHERE C.ID_TRABAJADOR = trabajador_id_param;
+
+    -- Mostrar los resultados
+    SELECT id_trabajador_result AS 'ID_TRABAJADOR',
+           nom_trabajador_result AS 'TRABAJADOR',
+           total_procedimiento AS 'SUMA';
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PROC_PRIVILEGIO_CU` (`_ID_PRIVILEGIO` INT, `_DESCRIPCION` VARCHAR(30))   BEGIN
+    -- MENSAJE A LA INTERFAZ
+    DECLARE __ICON VARCHAR(10) DEFAULT 'error';
+    DECLARE __MESSAGE_TEXT VARCHAR(300) DEFAULT 'HA OCURRIDO UN ERROR';
+    DECLARE __STATUS_CODE CHAR(3) DEFAULT '501';
+
+    -- COMPROBAR QUE EL NOMBRE NO EXISTA
+    DECLARE __EXISTS_NOMBRE INT DEFAULT 0;
+    SELECT ID_PRIVILEGIO INTO __EXISTS_NOMBRE
+    FROM PRIVILEGIO
+    WHERE ID_PRIVILEGIO <> _ID_PRIVILEGIO AND
+    DESCRIPCION = _DESCRIPCION AND ESTADO <> 0;
+
+
+    IF __EXISTS_NOMBRE = 0 THEN
+        IF _ID_PRIVILEGIO = 0 THEN
+            INSERT INTO PRIVILEGIO
+                (DESCRIPCION, ESTADO) VALUES
+                (_DESCRIPCION, '1');
+
+                -- MENSAJE
+                SET __ICON = 'success';
+                SET __MESSAGE_TEXT = 'REGISTRO EXITOSO';
+                SET __STATUS_CODE = '201';
+        ELSE
+            UPDATE PRIVILEGIO
+                SET 
+                    DESCRIPCION = _DESCRIPCION
+                WHERE
+                    ID_PRIVILEGIO = _ID_PRIVILEGIO;
+
+                -- MENSAJE
+                SET __ICON = 'success';
+                SET __MESSAGE_TEXT = 'DATOS ACTUALIZADOS';
+                SET __STATUS_CODE = '202';
+        END IF;
+    ELSE
+         -- MENSAJE
+        SET __ICON = 'warning';
+        SET __MESSAGE_TEXT = '¡EL NOMBRE YA SE ENCUENTRA EN USO!';
+        SET __STATUS_CODE = '200';
+    END IF;
+    SELECT __ICON AS 'ICON', __MESSAGE_TEXT AS 'MESSAGE_TEXT', __STATUS_CODE AS 'STATUS_CODE';
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PROC_PRIVILEGIO_DELETE` (`_ID_PRIVILEGIO` INT)   BEGIN
+    -- MENSAJES A LA INTERFAZ
+    DECLARE __ICON VARCHAR(10) DEFAULT 'error';
+    DECLARE __MESSAGE_TEXT VARCHAR(300) DEFAULT 'HA OCURRIDO UN ERROR';
+    DECLARE __STATUS_CODE CHAR(3) DEFAULT '501';
+
+    -- SABER SI NO SE ENCUENTRA O YA ESTA ELIMINADO
+    DECLARE __NO_EXISTS INT DEFAULT 0;
+
+    SELECT IF(ESTADO <> 0, ID_PRIVILEGIO, 0) INTO __NO_EXISTS FROM PRIVILEGIO
+    WHERE ID_PRIVILEGIO = _ID_PRIVILEGIO;
+
+    IF __NO_EXISTS = 0 THEN 
+        -- MENSAJE
+        SET __ICON = 'warning';
+        SET __MESSAGE_TEXT = 'EL ELEMENTO NO EXISTE O YA HA SIDO ELIMINADO';
+        SET __STATUS_CODE = '200';
+    ELSE
+        UPDATE PRIVILEGIO
+            SET ESTADO = '0'
+            WHERE ID_PRIVILEGIO = _ID_PRIVILEGIO;
+        -- MENSAJE
+            SET __ICON = 'success';
+            SET __MESSAGE_TEXT = 'ELEMENTO ELIMINADO';
+            SET __STATUS_CODE = '202';
+    END IF;
+    SELECT __ICON AS 'ICON', __MESSAGE_TEXT AS 'MESSAGE_TEXT', __STATUS_CODE AS 'STATUS_CODE';
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PROC_PRIVILEGIO_LISTAR` ()   BEGIN
+  SELECT * FROM PRIVILEGIO;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PROC_PROCEDIMIENTO_CU` (`_ID_PROCEDIMIENTO` INT, `_NOM_PROCEDIMIENTO` VARCHAR(200), `_PRECIO` DECIMAL(10,2))   BEGIN
+    -- MENSAJE A LA INTERFAZ
+    DECLARE __ICON VARCHAR(10) DEFAULT 'error';
+    DECLARE __MESSAGE_TEXT VARCHAR(300) DEFAULT 'HA OCURRIDO UN ERROR';
+    DECLARE __STATUS_CODE CHAR(3) DEFAULT '501';
+
+    -- COMPROBAR QUE EL NOMBRE NO EXISTA
+    DECLARE __EXISTS_NOMBRE INT DEFAULT 0;
+    SELECT ID_PROCEDIMIENTO INTO __EXISTS_NOMBRE
+    FROM PROCEDIMIENTO
+    WHERE ID_PROCEDIMIENTO <> _ID_PROCEDIMIENTO AND
+    NOM_PROCEDIMIENTO = _NOM_PROCEDIMIENTO AND ESTADO <> 0;
+
+    IF __EXISTS_NOMBRE = 0 THEN
+        IF _ID_PROCEDIMIENTO = 0 THEN
+            INSERT INTO PROCEDIMIENTO
+                (NOM_PROCEDIMIENTO, PRECIO, ESTADO) VALUES
+                (_NOM_PROCEDIMIENTO, _PRECIO, '1');
+
+                -- MENSAJE
+                SET __ICON = 'success';
+                SET __MESSAGE_TEXT = 'REGISTRO EXITOSO';
+                SET __STATUS_CODE = '201';
+        ELSE
+            UPDATE PROCEDIMIENTO
+                SET 
+                    NOM_PROCEDIMIENTO = _NOM_PROCEDIMIENTO,
+                    PRECIO = _PRECIO
+                WHERE
+                    ID_PROCEDIMIENTO = _ID_PROCEDIMIENTO;
+
+                -- MENSAJE
+                SET __ICON = 'success';
+                SET __MESSAGE_TEXT = 'DATOS ACTUALIZADOS';
+                SET __STATUS_CODE = '202';
+        END IF;
+    ELSE
+         -- MENSAJE
+        SET __ICON = 'warning';
+        SET __MESSAGE_TEXT = '¡EL NOMBRE YA SE ENCUENTRA EN USO!';
+        SET __STATUS_CODE = '200';
+    END IF;
+    SELECT __ICON AS 'ICON', __MESSAGE_TEXT AS 'MESSAGE_TEXT', __STATUS_CODE AS 'STATUS_CODE';
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PROC_PROCEDIMIENTO_DELETE` (`_ID_PROCEDIMIENTO` INT)   BEGIN
+    -- MENSAJES A LA INTERFAZ
+    DECLARE __ICON VARCHAR(10) DEFAULT 'error';
+    DECLARE __MESSAGE_TEXT VARCHAR(300) DEFAULT 'HA OCURRIDO UN ERROR';
+    DECLARE __STATUS_CODE CHAR(3) DEFAULT '501';
+
+    -- SABER SI NO SE ENCUENTRA O YA ESTA ELIMINADO
+    DECLARE __NO_EXISTS INT DEFAULT 0;
+
+    SELECT IF(ESTADO <> 0, ID_PROCEDIMIENTO, 0) INTO __NO_EXISTS FROM PROCEDIMIENTO
+    WHERE ID_PROCEDIMIENTO = _ID_PROCEDIMIENTO;
+
+    IF __NO_EXISTS = 0 THEN 
+        -- MENSAJE
+        SET __ICON = 'warning';
+        SET __MESSAGE_TEXT = 'EL ELEMENTO NO EXISTE O YA HA SIDO ELIMINADO';
+        SET __STATUS_CODE = '200';
+    ELSE
+        UPDATE PROCEDIMIENTO
+            SET ESTADO = '0'
+            WHERE ID_PROCEDIMIENTO = _ID_PROCEDIMIENTO;
+        -- MENSAJE
+            SET __ICON = 'success';
+            SET __MESSAGE_TEXT = 'ELEMENTO ELIMINADO';
+            SET __STATUS_CODE = '202';
+    END IF;
+    SELECT __ICON AS 'ICON', __MESSAGE_TEXT AS 'MESSAGE_TEXT', __STATUS_CODE AS 'STATUS_CODE';
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PROC_PROCEDIMIENTO_LISTAR` ()   BEGIN
+  SELECT * FROM PROCEDIMIENTO;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PROC_SELECT_CLIENTE` ()   BEGIN
+    SELECT * FROM CLIENTE WHERE ESTADO = '1';
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PROC_SELECT_PRIVILEGIO` ()   BEGIN
+    SELECT * FROM privilegio WHERE ESTADO = '1';
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PROC_SELECT_PROCEDIMIENTO` ()   BEGIN
+    SELECT * FROM PROCEDIMIENTO WHERE ESTADO = '1';
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PROC_SELECT_TIPO_PAGO` ()   BEGIN
+    SELECT * FROM TIPO_PAGO WHERE ESTADO = '1';
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PROC_SELECT_TRABAJADOR` ()   BEGIN
+    SELECT * FROM TRABAJADOR WHERE ESTADO = '1';
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PROC_TIPO_PAGO_CU` (`_ID_TIPO_PAGO` INT, `_DESCRIPCION` VARCHAR(200))   BEGIN
+    -- MENSAJE A LA INTERFAZ
+    DECLARE __ICON VARCHAR(10) DEFAULT 'error';
+    DECLARE __MESSAGE_TEXT VARCHAR(300) DEFAULT 'HA OCURRIDO UN ERROR';
+    DECLARE __STATUS_CODE CHAR(3) DEFAULT '501';
+
+    -- COMPROBAR QUE EL NOMBRE NO EXISTA
+    DECLARE __EXISTS_NOMBRE INT DEFAULT 0;
+    SELECT ID_TIPO_PAGO INTO __EXISTS_NOMBRE
+    FROM TIPO_PAGO
+    WHERE ID_TIPO_PAGO <> _ID_TIPO_PAGO AND
+    DESCRIPCION = _DESCRIPCION AND ESTADO <> 0;
+
+    IF __EXISTS_NOMBRE = 0 THEN
+        IF _ID_TIPO_PAGO = 0 THEN
+            INSERT INTO TIPO_PAGO
+                (DESCRIPCION, ESTADO) VALUES
+                (_DESCRIPCION, '1');
+
+                -- MENSAJE
+                SET __ICON = 'success';
+                SET __MESSAGE_TEXT = 'REGISTRO EXITOSO';
+                SET __STATUS_CODE = '201';
+        ELSE
+            UPDATE TIPO_PAGO
+                SET 
+                    DESCRIPCION = _DESCRIPCION
+                WHERE
+                    ID_TIPO_PAGO = _ID_TIPO_PAGO;
+
+                -- MENSAJE
+                SET __ICON = 'success';
+                SET __MESSAGE_TEXT = 'DATOS ACTUALIZADOS';
+                SET __STATUS_CODE = '202';
+        END IF;
+    ELSE
+         -- MENSAJE
+        SET __ICON = 'warning';
+        SET __MESSAGE_TEXT = '¡EL NOMBRE YA SE ENCUENTRA EN USO!';
+        SET __STATUS_CODE = '200';
+    END IF;
+    SELECT __ICON AS 'ICON', __MESSAGE_TEXT AS 'MESSAGE_TEXT', __STATUS_CODE AS 'STATUS_CODE';
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PROC_TIPO_PAGO_DELETE` (`_ID_TIPO_PAGO` INT)   BEGIN
+    -- MENSAJES A LA INTERFAZ
+    DECLARE __ICON VARCHAR(10) DEFAULT 'error';
+    DECLARE __MESSAGE_TEXT VARCHAR(300) DEFAULT 'HA OCURRIDO UN ERROR';
+    DECLARE __STATUS_CODE CHAR(3) DEFAULT '501';
+
+    -- SABER SI NO SE ENCUENTRA O YA ESTA ELIMINADO
+    DECLARE __NO_EXISTS INT DEFAULT 0;
+
+    SELECT IF(ESTADO <> 0, ID_TIPO_PAGO, 0) INTO __NO_EXISTS FROM TIPO_PAGO
+    WHERE ID_TIPO_PAGO = _ID_TIPO_PAGO;
+
+    IF __NO_EXISTS = 0 THEN 
+        -- MENSAJE
+        SET __ICON = 'warning';
+        SET __MESSAGE_TEXT = 'EL ELEMENTO NO EXISTE O YA HA SIDO ELIMINADO';
+        SET __STATUS_CODE = '200';
+    ELSE
+        UPDATE TIPO_PAGO
+            SET ESTADO = '0'
+            WHERE ID_TIPO_PAGO = _ID_TIPO_PAGO;
+        -- MENSAJE
+            SET __ICON = 'success';
+            SET __MESSAGE_TEXT = 'ELEMENTO ELIMINADO';
+            SET __STATUS_CODE = '202';
+    END IF;
+    SELECT __ICON AS 'ICON', __MESSAGE_TEXT AS 'MESSAGE_TEXT', __STATUS_CODE AS 'STATUS_CODE';
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PROC_TIPO_PAGO_LISTAR` ()   BEGIN
+  SELECT * FROM TIPO_PAGO;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PROC_TRABAJADOR_CU` (`_ID_TRABAJADOR` INT, `_DOCUMENTO` CHAR(8), `_NOMBRES` VARCHAR(100), `_APMATERNO` VARCHAR(50), `_APPATERNO` VARCHAR(50), `_CARGO` VARCHAR(50))   BEGIN
+    -- MENSAJE A LA INTERFAZ
+    DECLARE __ICON VARCHAR(10) DEFAULT 'error';
+    DECLARE __MESSAGE_TEXT VARCHAR(300) DEFAULT 'HA OCURRIDO UN ERROR';
+    DECLARE __STATUS_CODE CHAR(3) DEFAULT '501';
+
+    -- COMPROBAR QUE EL NOMBRE NO EXISTA
+    DECLARE __EXISTS_NOMBRE INT DEFAULT 0;
+    SELECT ID_TRABAJADOR INTO __EXISTS_NOMBRE
+    FROM TRABAJADOR
+    WHERE ID_TRABAJADOR <> _ID_TRABAJADOR AND
+    DOCUMENTO = _DOCUMENTO AND ESTADO <> 0;
+
+
+
+    IF __EXISTS_NOMBRE = 0 THEN
+        IF _ID_TRABAJADOR = 0 THEN
+            INSERT INTO TRABAJADOR
+                (DOCUMENTO, NOMBRES, APMATERNO, APPATERNO, CARGO, ESTADO) VALUES
+                (_DOCUMENTO, _NOMBRES, _APMATERNO, _APPATERNO, _CARGO, '1');
+
+                -- MENSAJE
+                SET __ICON = 'success';
+                SET __MESSAGE_TEXT = 'REGISTRO EXITOSO';
+                SET __STATUS_CODE = '201';
+        ELSE
+            UPDATE TRABAJADOR
+                SET 
+                    DOCUMENTO = _DOCUMENTO,
+                    NOMBRES = _NOMBRES,
+                    APMATERNO = _APMATERNO,
+                    APPATERNO = _APPATERNO,
+                    CARGO = _CARGO
+                WHERE
+                    ID_TRABAJADOR = _ID_TRABAJADOR;
+
+                -- MENSAJE
+                SET __ICON = 'success';
+                SET __MESSAGE_TEXT = 'DATOS ACTUALIZADOS';
+                SET __STATUS_CODE = '202';
+        END IF;
+    ELSE
+         -- MENSAJE
+        SET __ICON = 'warning';
+        SET __MESSAGE_TEXT = '¡EL NOMBRE YA SE ENCUENTRA EN USO!';
+        SET __STATUS_CODE = '200';
+    END IF;
+    SELECT __ICON AS 'ICON', __MESSAGE_TEXT AS 'MESSAGE_TEXT', __STATUS_CODE AS 'STATUS_CODE';
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PROC_TRABAJADOR_DELETE` (`_ID_TRABAJADOR` INT)   BEGIN
+    -- MENSAJES A LA INTERFAZ
+    DECLARE __ICON VARCHAR(10) DEFAULT 'error';
+    DECLARE __MESSAGE_TEXT VARCHAR(300) DEFAULT 'HA OCURRIDO UN ERROR';
+    DECLARE __STATUS_CODE CHAR(3) DEFAULT '501';
+
+    -- SABER SI NO SE ENCUENTRA O YA ESTA ELIMINADO
+    DECLARE __NO_EXISTS INT DEFAULT 0;
+
+    SELECT IF(ESTADO <> 0, ID_TRABAJADOR, 0) INTO __NO_EXISTS FROM TRABAJADOR
+    WHERE ID_TRABAJADOR = _ID_TRABAJADOR;
+
+    IF __NO_EXISTS = 0 THEN 
+        -- MENSAJE
+        SET __ICON = 'warning';
+        SET __MESSAGE_TEXT = 'EL ELEMENTO NO EXISTE O YA HA SIDO ELIMINADO';
+        SET __STATUS_CODE = '200';
+    ELSE
+        UPDATE TRABAJADOR
+            SET ESTADO = '0'
+            WHERE ID_TRABAJADOR = _ID_TRABAJADOR;
+        -- MENSAJE
+            SET __ICON = 'success';
+            SET __MESSAGE_TEXT = 'ELEMENTO ELIMINADO';
+            SET __STATUS_CODE = '202';
+    END IF;
+    SELECT __ICON AS 'ICON', __MESSAGE_TEXT AS 'MESSAGE_TEXT', __STATUS_CODE AS 'STATUS_CODE';
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PROC_TRABAJADOR_LISTAR` ()   BEGIN
+  SELECT * FROM TRABAJADOR;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PROC_USUARIO_CU` (IN `_ID_USUARIO` INT, IN `_ID_TRABAJADOR` INT, IN `_ID_PRIVILEGIO` INT, IN `_CONTRASENIA` VARCHAR(64))   BEGIN
+    DECLARE __ICON VARCHAR(10) DEFAULT 'error';
+    DECLARE __MESSAGE_TEXT VARCHAR(300) DEFAULT 'HA OCURRIDO UN ERROR';
+    DECLARE __STATUS_CODE CHAR(3) DEFAULT '501';
+    
+    -- Verificar si el trabajador existe
+    DECLARE contador INT;
+    SET contador = 0;
+
+    SELECT COUNT(*) INTO contador FROM TRABAJADOR
+    WHERE ID_TRABAJADOR = _ID_TRABAJADOR;
+
+    IF contador = 1 THEN
+        -- Verificar si el usuario ya existe
+        SELECT COUNT(*) INTO contador FROM USUARIO U
+        JOIN TRABAJADOR T ON U.ID_TRABAJADOR = T.ID_TRABAJADOR
+        WHERE T.DOCUMENTO = (SELECT DOCUMENTO FROM TRABAJADOR WHERE ID_TRABAJADOR = _ID_TRABAJADOR)
+          AND U.ID_TRABAJADOR <> COALESCE(_ID_TRABAJADOR, 0)
+          AND U.ESTADO <> 0;
+
+        IF contador = 0 THEN
+            -- Verificar si el usuario ya existe con el mismo documento
+            SELECT COUNT(*) INTO contador FROM USUARIO
+            WHERE ID_TRABAJADOR = _ID_TRABAJADOR AND ESTADO <> 0;
+
+            IF contador = 0 THEN
+                -- Crear o modificar usuario
+                IF _ID_USUARIO = 0 THEN
+                    -- Crear un nuevo usuario
+                    INSERT INTO USUARIO (ID_TRABAJADOR, ID_PRIVILEGIO, CONTRASENIA, ESTADO)
+                    VALUES (_ID_TRABAJADOR, _ID_PRIVILEGIO, _CONTRASENIA, '1');
+
+                    SET __ICON = 'success';
+                    SET __MESSAGE_TEXT = 'REGISTRO EXITOSO';
+                    SET __STATUS_CODE = '201';
+                ELSE
+                    -- Actualizar datos del usuario existente
+                    UPDATE USUARIO
+                    SET 
+                        ID_PRIVILEGIO = _ID_PRIVILEGIO,
+                        CONTRASENIA = _CONTRASENIA
+                    WHERE ID_USUARIO  = _ID_USUARIO;
+
+                    SET __ICON = 'success';
+                    SET __MESSAGE_TEXT = 'DATOS ACTUALIZADOS';
+                    SET __STATUS_CODE = '202';
+                END IF;
+            ELSE
+                SET __ICON = 'warning';
+                SET __MESSAGE_TEXT = '¡EL DOCUMENTO YA SE ENCUENTRA EN USO COMO USUARIO!';
+                SET __STATUS_CODE = '200';
+            END IF;
+        ELSE
+            SET __ICON = 'warning';
+            SET __MESSAGE_TEXT = '¡EL USUARIO YA EXISTE!';
+            SET __STATUS_CODE = '200';
+        END IF;
+    ELSE
+        SET __ICON = 'warning';
+        SET __MESSAGE_TEXT = '¡La persona no existe!';
+        SET __STATUS_CODE = '200';
+    END IF;
+
+    SELECT __ICON AS 'ICON', __MESSAGE_TEXT AS 'MESSAGE_TEXT', __STATUS_CODE AS 'STATUS_CODE';
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PROC_USUARIO_DELETE` (`_ID_USUARIO` INT)   BEGIN
+    -- MENSAJES A LA INTERFAZ
+    DECLARE __ICON VARCHAR(10) DEFAULT 'error';
+    DECLARE __MESSAGE_TEXT VARCHAR(300) DEFAULT 'HA OCURRIDO UN ERROR';
+    DECLARE __STATUS_CODE CHAR(3) DEFAULT '501';
+
+    -- SABER SI NO SE ENCUENTRA O YA ESTA ELIMINADO
+    DECLARE __NO_EXISTS INT DEFAULT 0;
+
+    SELECT IF(ESTADO <> 0, ID_USUARIO , 0) INTO __NO_EXISTS FROM USUARIO
+    WHERE ID_USUARIO  = _ID_USUARIO ;
+
+    IF __NO_EXISTS = 0 THEN 
+        -- MENSAJE
+        SET __ICON = 'warning';
+        SET __MESSAGE_TEXT = 'EL ELEMENTO NO EXISTE O YA HA SIDO ELIMINADO';
+        SET __STATUS_CODE = '200';
+    ELSE
+        UPDATE USUARIO
+            SET ESTADO = '0'
+            WHERE ID_USUARIO  = _ID_USUARIO ;
+        -- MENSAJE
+            SET __ICON = 'success';
+            SET __MESSAGE_TEXT = 'ELEMENTO ELIMINADO';
+            SET __STATUS_CODE = '202';
+    END IF;
+    SELECT __ICON AS 'ICON', __MESSAGE_TEXT AS 'MESSAGE_TEXT', __STATUS_CODE AS 'STATUS_CODE';
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PROC_USUARIO_LIST` ()   BEGIN
+  SELECT 
+    US.ID_USUARIO,
+    US.ID_TRABAJADOR,
+    TR.DOCUMENTO,
+    TR.NOMBRES,
+    TR.APPATERNO,
+    TR.APMATERNO,
+    TR.CARGO,
+    US.ID_PRIVILEGIO,
+    PR.DESCRIPCION AS NOMBRE_PRIVILEGIO,
+    US.ESTADO
+  FROM
+    USUARIO US 
+    INNER JOIN TRABAJADOR TR 
+      ON TR.ID_TRABAJADOR = US.ID_TRABAJADOR 
+    INNER JOIN PRIVILEGIO PR 
+      ON PR.ID_PRIVILEGIO = US.ID_PRIVILEGIO
+  ORDER BY US.ID_USUARIO ASC; -- ASC para ordenar de menor a mayor
+
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PROC_USUARIO_LOGIN` (`_DOCUMENTO` VARCHAR(20), `_CONTRASENIA` VARCHAR(16))   BEGIN
+  SELECT 
+    US.ID_USUARIO,
+    TR.DOCUMENTO,
+    TR.NOMBRES,
+    TR.APPATERNO,
+    TR.APMATERNO,
+    TR.CARGO,
+    US.ID_PRIVILEGIO,
+    PR.DESCRIPCION AS 'NOMBRE_PRIVILEGIO'
+  FROM USUARIO US
+  INNER JOIN TRABAJADOR TR
+  ON TR.ID_TRABAJADOR = US.ID_TRABAJADOR
+  INNER JOIN PRIVILEGIO PR
+  ON PR.ID_PRIVILEGIO = US.ID_PRIVILEGIO
+  WHERE 
+    TR.DOCUMENTO = _DOCUMENTO
+    AND US.CONTRASENIA = SHA2(_CONTRASENIA, 256)
+    AND US.ESTADO <> 0;
+END$$
+
+DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `cliente`
+--
+
+CREATE TABLE `cliente` (
+  `ID_CLIENTE` int NOT NULL,
+  `DOCUMENTO` char(8) DEFAULT NULL,
+  `NOMBRES` varchar(100) DEFAULT NULL,
+  `APPATERNO` varchar(50) DEFAULT NULL,
+  `APMATERNO` varchar(50) DEFAULT NULL,
+  `CELULAR` char(9) DEFAULT NULL,
+  `ESTADO` char(1) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Volcado de datos para la tabla `cliente`
+--
+
+INSERT INTO `cliente` (`ID_CLIENTE`, `DOCUMENTO`, `NOMBRES`, `APPATERNO`, `APMATERNO`, `CELULAR`, `ESTADO`) VALUES
+(1, '73146289', 'JORGE ARMANDO', 'BONIFAZ', 'CAMPOS', '894564567', '0'),
+(2, '78526931', 'NICOLE', 'SULCA', 'VILLAFUERTE', '959446486', '1'),
+(3, '72145689', 'JHOAN ALVARADO', 'CANALES', 'DEL CARPIO', '846456464', '1'),
+(4, '78526935', 'JUANJESUS', 'ESTIPO', 'CANELO', NULL, '0'),
+(5, '52361589', 'PRUEBA', 'DSAD', 'DSAHDHI', '920668255', '1'),
+(7, '52410366', 'JUANJESUS', 'ESTIPO', 'CANELO', '123456789', '1'),
+(8, '73146289', 'jorgre', 'hola', 'snajdhi', '31591894', '1');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `consulta`
+--
+
+CREATE TABLE `consulta` (
+  `ID_CONSULTA` int NOT NULL,
+  `OBSERVACION` varchar(255) DEFAULT NULL,
+  `FECHA` date DEFAULT NULL,
+  `ID_TRABAJADOR` int DEFAULT NULL,
+  `ID_CLIENTE` int DEFAULT NULL,
+  `ID_PROCEDIMIENTO` int DEFAULT NULL,
+  `ID_TIPO_PAGO` int DEFAULT NULL,
+  `ESTADO` int DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Volcado de datos para la tabla `consulta`
+--
+
+INSERT INTO `consulta` (`ID_CONSULTA`, `OBSERVACION`, `FECHA`, `ID_TRABAJADOR`, `ID_CLIENTE`, `ID_PROCEDIMIENTO`, `ID_TIPO_PAGO`, `ESTADO`) VALUES
+(1, 'prueba2', '2024-09-09', 1, 1, 1, 1, 1),
+(5, 'Observación de prueba', '2024-01-27', 1, 1, 1, 1, 1),
+(11, 'HOLA', '2024-08-09', 2, 2, 2, 1, 0),
+(12, '785', '2024-01-30', 1, 2, 1, 3, 1),
+(13, 'OHFDOHS', '2024-01-10', 1, 2, 1, 1, 0),
+(14, 'YA PAGO', '2024-01-28', 1, 8, 7, 1, 0);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `privilegio`
+--
+
+CREATE TABLE `privilegio` (
+  `ID_PRIVILEGIO` int NOT NULL,
+  `DESCRIPCION` varchar(30) DEFAULT NULL,
+  `ESTADO` char(1) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Volcado de datos para la tabla `privilegio`
+--
+
+INSERT INTO `privilegio` (`ID_PRIVILEGIO`, `DESCRIPCION`, `ESTADO`) VALUES
+(1, 'ADMINISTRADOR', '1'),
+(2, 'NATURAL', '0'),
+(4, 'NATURAL', '1');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `procedimiento`
+--
+
+CREATE TABLE `procedimiento` (
+  `ID_PROCEDIMIENTO` int NOT NULL,
+  `NOM_PROCEDIMIENTO` varchar(200) DEFAULT NULL,
+  `PRECIO` decimal(10,2) DEFAULT NULL,
+  `ESTADO` char(1) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Volcado de datos para la tabla `procedimiento`
+--
+
+INSERT INTO `procedimiento` (`ID_PROCEDIMIENTO`, `NOM_PROCEDIMIENTO`, `PRECIO`, `ESTADO`) VALUES
+(1, 'CPN+DOPPLER', 180.00, '1'),
+(2, 'PACK 2', 170.00, '1'),
+(3, 'CPN', 180.00, '0'),
+(4, 'SASA', 45.00, '0'),
+(5, 'SASASA', 85.40, '0'),
+(6, 'HOLA', 15.00, '1'),
+(7, 'A NADA', 130.00, '1');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tipo_pago`
+--
+
+CREATE TABLE `tipo_pago` (
+  `ID_TIPO_PAGO` int NOT NULL,
+  `DESCRIPCION` varchar(200) DEFAULT NULL,
+  `ESTADO` char(1) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Volcado de datos para la tabla `tipo_pago`
+--
+
+INSERT INTO `tipo_pago` (`ID_TIPO_PAGO`, `DESCRIPCION`, `ESTADO`) VALUES
+(1, 'EFECTIVO', '1'),
+(2, 'TARJETA', '1'),
+(3, 'YAPE', '1'),
+(4, 'EPSs', '0'),
+(5, 'PLIN', '1'),
+(6, 'EPSs', '1');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `trabajador`
+--
+
+CREATE TABLE `trabajador` (
+  `ID_TRABAJADOR` int NOT NULL,
+  `DOCUMENTO` char(8) DEFAULT NULL,
+  `NOMBRES` varchar(100) DEFAULT NULL,
+  `APPATERNO` varchar(50) DEFAULT NULL,
+  `APMATERNO` varchar(50) DEFAULT NULL,
+  `CARGO` varchar(50) DEFAULT NULL,
+  `ESTADO` char(1) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Volcado de datos para la tabla `trabajador`
+--
+
+INSERT INTO `trabajador` (`ID_TRABAJADOR`, `DOCUMENTO`, `NOMBRES`, `APPATERNO`, `APMATERNO`, `CARGO`, `ESTADO`) VALUES
+(1, '12345678', 'MARGOT ISABEL', 'BONIFAZ', 'CAMPOS', 'LICENCIADA', '1'),
+(2, '74126589', 'ARIANA ', 'ONCOY', 'NOSE', 'DOCTORA', '1'),
+(3, '45268931', 'MARIA ', 'ARABE', 'DEL CARMEN', 'LICENCIADA', '0'),
+(4, '52136951', 'DSADA', 'DSAD', 'DASD', 'DSADADA', '0'),
+(5, '52136951', 'SDFAFSA', 'DSAD', 'DSADA', 'HOLA', '1');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `usuario`
+--
+
+CREATE TABLE `usuario` (
+  `ID_USUARIO` int NOT NULL,
+  `ID_TRABAJADOR` int DEFAULT NULL,
+  `ID_PRIVILEGIO` int DEFAULT NULL,
+  `CONTRASENIA` varchar(20) DEFAULT NULL,
+  `ESTADO` char(1) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Volcado de datos para la tabla `usuario`
+--
+
+INSERT INTO `usuario` (`ID_USUARIO`, `ID_TRABAJADOR`, `ID_PRIVILEGIO`, `CONTRASENIA`, `ESTADO`) VALUES
+(1, 1, 1, '123456', '1'),
+(2, 2, 1, '123456', '0'),
+(3, 2, 1, '123', '1');
+
+--
+-- Índices para tablas volcadas
+--
+
+--
+-- Indices de la tabla `cliente`
+--
+ALTER TABLE `cliente`
+  ADD PRIMARY KEY (`ID_CLIENTE`);
+
+--
+-- Indices de la tabla `consulta`
+--
+ALTER TABLE `consulta`
+  ADD PRIMARY KEY (`ID_CONSULTA`),
+  ADD KEY `CONSULTA_FK_TRABAJADOR` (`ID_TRABAJADOR`),
+  ADD KEY `CONSULTA_FK_CLIENTE` (`ID_CLIENTE`),
+  ADD KEY `CONSULTA_FK_TIPOPAGO` (`ID_TIPO_PAGO`),
+  ADD KEY `CONSULTA_FK_PROCEDIMIENTO` (`ID_PROCEDIMIENTO`);
+
+--
+-- Indices de la tabla `privilegio`
+--
+ALTER TABLE `privilegio`
+  ADD PRIMARY KEY (`ID_PRIVILEGIO`);
+
+--
+-- Indices de la tabla `procedimiento`
+--
+ALTER TABLE `procedimiento`
+  ADD PRIMARY KEY (`ID_PROCEDIMIENTO`);
+
+--
+-- Indices de la tabla `tipo_pago`
+--
+ALTER TABLE `tipo_pago`
+  ADD PRIMARY KEY (`ID_TIPO_PAGO`);
+
+--
+-- Indices de la tabla `trabajador`
+--
+ALTER TABLE `trabajador`
+  ADD PRIMARY KEY (`ID_TRABAJADOR`);
+
+--
+-- Indices de la tabla `usuario`
+--
+ALTER TABLE `usuario`
+  ADD PRIMARY KEY (`ID_USUARIO`),
+  ADD KEY `USUARIO_FK_TRABAJADOR` (`ID_TRABAJADOR`),
+  ADD KEY `USUARIO_FK_PRIVILEGIO` (`ID_PRIVILEGIO`);
+
+--
+-- AUTO_INCREMENT de las tablas volcadas
+--
+
+--
+-- AUTO_INCREMENT de la tabla `cliente`
+--
+ALTER TABLE `cliente`
+  MODIFY `ID_CLIENTE` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+
+--
+-- AUTO_INCREMENT de la tabla `consulta`
+--
+ALTER TABLE `consulta`
+  MODIFY `ID_CONSULTA` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+
+--
+-- AUTO_INCREMENT de la tabla `privilegio`
+--
+ALTER TABLE `privilegio`
+  MODIFY `ID_PRIVILEGIO` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT de la tabla `procedimiento`
+--
+ALTER TABLE `procedimiento`
+  MODIFY `ID_PROCEDIMIENTO` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT de la tabla `tipo_pago`
+--
+ALTER TABLE `tipo_pago`
+  MODIFY `ID_TIPO_PAGO` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT de la tabla `trabajador`
+--
+ALTER TABLE `trabajador`
+  MODIFY `ID_TRABAJADOR` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT de la tabla `usuario`
+--
+ALTER TABLE `usuario`
+  MODIFY `ID_USUARIO` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- Restricciones para tablas volcadas
+--
+
+--
+-- Filtros para la tabla `consulta`
+--
+ALTER TABLE `consulta`
+  ADD CONSTRAINT `CONSULTA_FK_CLIENTE` FOREIGN KEY (`ID_CLIENTE`) REFERENCES `cliente` (`ID_CLIENTE`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  ADD CONSTRAINT `CONSULTA_FK_PROCEDIMIENTO` FOREIGN KEY (`ID_PROCEDIMIENTO`) REFERENCES `procedimiento` (`ID_PROCEDIMIENTO`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  ADD CONSTRAINT `CONSULTA_FK_TIPOPAGO` FOREIGN KEY (`ID_TIPO_PAGO`) REFERENCES `tipo_pago` (`ID_TIPO_PAGO`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  ADD CONSTRAINT `CONSULTA_FK_TRABAJADOR` FOREIGN KEY (`ID_TRABAJADOR`) REFERENCES `trabajador` (`ID_TRABAJADOR`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+--
+-- Filtros para la tabla `usuario`
+--
+ALTER TABLE `usuario`
+  ADD CONSTRAINT `USUARIO_FK_PRIVILEGIO` FOREIGN KEY (`ID_PRIVILEGIO`) REFERENCES `privilegio` (`ID_PRIVILEGIO`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  ADD CONSTRAINT `USUARIO_FK_TRABAJADOR` FOREIGN KEY (`ID_TRABAJADOR`) REFERENCES `trabajador` (`ID_TRABAJADOR`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

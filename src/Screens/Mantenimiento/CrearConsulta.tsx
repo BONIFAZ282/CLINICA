@@ -3,7 +3,6 @@ import { Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, T
 import Grid from '@mui/material/Unstable_Grid2/Grid2';
 import { DataGrid, GridActionsCellItem, GridRowClassNameParams, GridRowId, GridToolbarContainer, GridToolbarExport, esES } from '@mui/x-data-grid';
 import { iLConsulta, iLTrabajador, iLCliente, iLProcedimiento, iLTipoPago, iResponse } from '../../iType';
-import dayjs from "dayjs";
 import { URL_API } from '../../config';
 import Swal, { SweetAlertIcon } from 'sweetalert2';
 import EditIcon from '@mui/icons-material/Edit';

@@ -1,0 +1,173 @@
+-- = MOSTRAR TODO
+DELIMITER $$
+
+CREATE PROCEDURE PROC_USUARIO_LIST () 
+BEGIN
+  SELECT 
+    US.ID_USUARIO,
+    US.ID_TRABAJADOR,
+    TR.DOCUMENTO,
+    TR.NOMBRES,
+    TR.APPATERNO,
+    TR.APMATERNO,
+    TR.CARGO,
+    US.ID_PRIVILEGIO,
+    PR.DESCRIPCION AS NOMBRE_PRIVILEGIO,
+    US.ESTADO
+  FROM
+    USUARIO US 
+    INNER JOIN TRABAJADOR TR 
+      ON TR.ID_TRABAJADOR = US.ID_TRABAJADOR 
+    INNER JOIN PRIVILEGIO PR 
+      ON PR.ID_PRIVILEGIO = US.ID_PRIVILEGIO
+  ORDER BY US.ID_USUARIO ASC; -- ASC para ordenar de menor a mayor
+
+END $$
+
+DELIMITER ;
+
+
+
+-- = LOGIN 
+DELIMITER $$
+CREATE PROCEDURE PROC_USUARIO_LOGIN (
+  _DOCUMENTO VARCHAR(20),
+  _CONTRASENIA VARCHAR(16)
+) BEGIN
+  SELECT 
+    US.ID_USUARIO,
+    TR.DOCUMENTO,
+    TR.NOMBRES,
+    TR.APPATERNO,
+    TR.APMATERNO,
+    TR.CARGO,
+    US.ID_PRIVILEGIO,
+    PR.DESCRIPCION AS 'NOMBRE_PRIVILEGIO'
+  FROM USUARIO US
+  INNER JOIN TRABAJADOR TR
+  ON TR.ID_TRABAJADOR = US.ID_TRABAJADOR
+  INNER JOIN PRIVILEGIO PR
+  ON PR.ID_PRIVILEGIO = US.ID_PRIVILEGIO
+  WHERE 
+    TR.DOCUMENTO = _DOCUMENTO
+    AND US.CONTRASENIA = SHA2(_CONTRASENIA, 256)
+    AND US.ESTADO <> 0;
+END $$
+DELIMITER ;
+
+
+
+
+
+DELIMITER $$
+
+CREATE PROCEDURE PROC_USUARIO_CU(
+    IN _ID_USUARIO INT,
+    IN _ID_TRABAJADOR INT,
+    IN _ID_PRIVILEGIO INT,
+    IN _CONTRASENIA VARCHAR(64)
+)
+BEGIN
+    DECLARE __ICON VARCHAR(10) DEFAULT 'error';
+    DECLARE __MESSAGE_TEXT VARCHAR(300) DEFAULT 'HA OCURRIDO UN ERROR';
+    DECLARE __STATUS_CODE CHAR(3) DEFAULT '501';
+    
+    -- Verificar si el trabajador existe
+    DECLARE contador INT;
+    SET contador = 0;
+
+    SELECT COUNT(*) INTO contador FROM TRABAJADOR
+    WHERE ID_TRABAJADOR = _ID_TRABAJADOR;
+
+    IF contador = 1 THEN
+        -- Verificar si el usuario ya existe
+        SELECT COUNT(*) INTO contador FROM USUARIO U
+        JOIN TRABAJADOR T ON U.ID_TRABAJADOR = T.ID_TRABAJADOR
+        WHERE T.DOCUMENTO = (SELECT DOCUMENTO FROM TRABAJADOR WHERE ID_TRABAJADOR = _ID_TRABAJADOR)
+          AND U.ID_TRABAJADOR <> COALESCE(_ID_TRABAJADOR, 0)
+          AND U.ESTADO <> 0;
+
+        IF contador = 0 THEN
+            -- Verificar si el usuario ya existe con el mismo documento
+            SELECT COUNT(*) INTO contador FROM USUARIO
+            WHERE ID_TRABAJADOR = _ID_TRABAJADOR AND ESTADO <> 0;
+
+            IF contador = 0 THEN
+                -- Crear o modificar usuario
+                IF _ID_USUARIO = 0 THEN
+                    -- Crear un nuevo usuario
+                    INSERT INTO USUARIO (ID_TRABAJADOR, ID_PRIVILEGIO, CONTRASENIA, ESTADO)
+                    VALUES (_ID_TRABAJADOR, _ID_PRIVILEGIO, _CONTRASENIA, '1');
+
+                    SET __ICON = 'success';
+                    SET __MESSAGE_TEXT = 'REGISTRO EXITOSO';
+                    SET __STATUS_CODE = '201';
+                ELSE
+                    -- Actualizar datos del usuario existente
+                    UPDATE USUARIO
+                    SET 
+                        ID_PRIVILEGIO = _ID_PRIVILEGIO,
+                        CONTRASENIA = _CONTRASENIA
+                    WHERE ID_USUARIO  = _ID_USUARIO;
+
+                    SET __ICON = 'success';
+                    SET __MESSAGE_TEXT = 'DATOS ACTUALIZADOS';
+                    SET __STATUS_CODE = '202';
+                END IF;
+            ELSE
+                SET __ICON = 'warning';
+                SET __MESSAGE_TEXT = '¡EL DOCUMENTO YA SE ENCUENTRA EN USO COMO USUARIO!';
+                SET __STATUS_CODE = '200';
+            END IF;
+        ELSE
+            SET __ICON = 'warning';
+            SET __MESSAGE_TEXT = '¡EL USUARIO YA EXISTE!';
+            SET __STATUS_CODE = '200';
+        END IF;
+    ELSE
+        SET __ICON = 'warning';
+        SET __MESSAGE_TEXT = '¡La persona no existe!';
+        SET __STATUS_CODE = '200';
+    END IF;
+
+    SELECT __ICON AS 'ICON', __MESSAGE_TEXT AS 'MESSAGE_TEXT', __STATUS_CODE AS 'STATUS_CODE';
+END $$
+
+DELIMITER ;
+
+
+
+
+-- = ELIMINAR CLIENTE
+DELIMITER $$
+CREATE PROCEDURE PROC_USUARIO_DELETE(
+    _ID_USUARIO INT
+) BEGIN
+    -- MENSAJES A LA INTERFAZ
+    DECLARE __ICON VARCHAR(10) DEFAULT 'error';
+    DECLARE __MESSAGE_TEXT VARCHAR(300) DEFAULT 'HA OCURRIDO UN ERROR';
+    DECLARE __STATUS_CODE CHAR(3) DEFAULT '501';
+
+    -- SABER SI NO SE ENCUENTRA O YA ESTA ELIMINADO
+    DECLARE __NO_EXISTS INT DEFAULT 0;
+
+    SELECT IF(ESTADO <> 0, ID_USUARIO , 0) INTO __NO_EXISTS FROM USUARIO
+    WHERE ID_USUARIO  = _ID_USUARIO ;
+
+    IF __NO_EXISTS = 0 THEN 
+        -- MENSAJE
+        SET __ICON = 'warning';
+        SET __MESSAGE_TEXT = 'EL ELEMENTO NO EXISTE O YA HA SIDO ELIMINADO';
+        SET __STATUS_CODE = '200';
+    ELSE
+        UPDATE USUARIO
+            SET ESTADO = '0'
+            WHERE ID_USUARIO  = _ID_USUARIO ;
+        -- MENSAJE
+            SET __ICON = 'success';
+            SET __MESSAGE_TEXT = 'ELEMENTO ELIMINADO';
+            SET __STATUS_CODE = '202';
+    END IF;
+    SELECT __ICON AS 'ICON', __MESSAGE_TEXT AS 'MESSAGE_TEXT', __STATUS_CODE AS 'STATUS_CODE';
+END $$
+DELIMITER ;
