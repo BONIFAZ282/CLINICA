@@ -11,12 +11,9 @@ import "./App.sass"
 import CrearUsuario from "./Screens/Mantenimiento/CrearUsuario";
 import CrearPrivilegio from "./Screens/Mantenimiento/CrearPrivilegio";
 import CrearTrabajador from "./Screens/Mantenimiento/CrearTrabajador";
-import CrearCliente from "./Screens/Mantenimiento/CrearCliente";
-import CrearProcedimiento from "./Screens/Mantenimiento/CrearProcedimiento";
-import CrearMetodoPago from "./Screens/Mantenimiento/CrearMetodoPago";
-import CrearConsulta from "./Screens/Mantenimiento/CrearConsulta";
-import PruebaConsulta from "./Screens/Mantenimiento/PruebaConsulta";
-
+import CrearCategoria from "./Screens/Mantenimiento/CrearCategoria";
+import CrearTipoVehiculo from "./Screens/Mantenimiento/CrearTipoVehiculo";
+import CrearSeguridad from "./Screens/Mantenimiento/CrearSeguridad";
 
 function App() {
   return (
@@ -32,34 +29,25 @@ function App() {
           <Route path={`${folderDefault}/login`} element={<Login />}></Route>
 
           {/* Mantenimiento */}
-
-          <Route
-            path={`${folderDefault}/mantenimiento/cliente`}
-            element={<PrivateRoute onlyAdmin={true} element={<DrawerContent element={<CrearCliente />} title="Cliente" />} />}
-          ></Route>
           <Route
             path={`${folderDefault}/mantenimiento/usuarios`}
             element={<PrivateRoute onlyAdmin={true} element={<DrawerContent element={<CrearUsuario />} title="Usuario" />} />}
           ></Route>
           <Route
             path={`${folderDefault}/mantenimiento/privilegios`}
-            element={<PrivateRoute onlyAdmin={true} element={<DrawerContent element={<CrearPrivilegio />} title="Privilegio" />} />}
+            element={<PrivateRoute onlyAdmin={true} element={<DrawerContent element={<CrearPrivilegio />} title="Categoria" />} />}
           ></Route>
           <Route
-            path={`${folderDefault}/mantenimiento/trabajadores`}
-            element={<PrivateRoute onlyAdmin={true} element={<DrawerContent element={<CrearTrabajador />} title="Trabajador" />} />}
+            path={`${folderDefault}/mantenimiento/categorias`}
+            element={<PrivateRoute onlyAdmin={true} element={<DrawerContent element={<CrearCategoria />} title="Privilegio" />} />}
           ></Route>
           <Route
-            path={`${folderDefault}/mantenimiento/procedimientos`}
-            element={<PrivateRoute onlyAdmin={true} element={<DrawerContent element={<CrearProcedimiento />} title="Procedimiento" />} />}
+            path={`${folderDefault}/mantenimiento/tipoVehiculo`}
+            element={<PrivateRoute onlyAdmin={true} element={<DrawerContent element={<CrearTipoVehiculo />} title="Privilegio" />} />}
           ></Route>
           <Route
-            path={`${folderDefault}/mantenimiento/mpagos`}
-            element={<PrivateRoute onlyAdmin={true} element={<DrawerContent element={<CrearMetodoPago />} title="Metodo de Pago" />} />}
-          ></Route>
-          <Route
-            path={`${folderDefault}/mantenimiento/consultas`}
-            element={<PrivateRoute onlyAdmin={true} element={<DrawerContent element={<PruebaConsulta />} title="Consultas" />} />}
+            path={`${folderDefault}/mantenimiento/seguridad`}
+            element={<PrivateRoute onlyAdmin={true} element={<DrawerContent element={<CrearSeguridad />} title="Privilegio" />} />}
           ></Route>
           <Route path={`${folderDefault}/*`} element={<NoFound />}></Route>
         </Route>

@@ -258,7 +258,7 @@ function CrearTrabajador() {
                     <Button
                         type="submit"
                         variant="contained"
-                        style={{ backgroundColor: "#D9A3FF", maxWidth: 250, fontWeight: "bold", margin: "auto" }}
+                        style={{ backgroundColor: "#9692F5", maxWidth: 250, fontWeight: "bold", margin: "auto" }}
                     >
                         {
                             formValues.ID_TRABAJADOR !== "0" ?

@@ -1,31 +1,23 @@
 import { useState, useEffect } from 'react';
-import { Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
+import { Button, FormControl, TextField } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2/Grid2';
 import { DataGrid, GridActionsCellItem, GridRowClassNameParams, GridRowId, GridToolbarContainer, GridToolbarExport, esES } from '@mui/x-data-grid';
-import { iLUsuarios, iLPersona, iLPrivilegio, iResponse } from '../../iType';
-import dayjs from "dayjs";
+import { iLCategoria, iResponse } from '../../iType';
 import { URL_API } from '../../config';
 import Swal, { SweetAlertIcon } from 'sweetalert2';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 
-
-function CrearUsuario() {
+function CrearCategoria() {
 
   const [formValues, setFormValues] = useState({
-    ID_USUARIO: "0",
-    ID_PERSONA: "",
-    ID_PRIVILEGIO: "",
-    CONTRASENIA: ""
+    ID_CATEGORIA: "0",
+    NOM_CATEGORIA: ""
   });
 
-  // Datos para la lista
-  const [lUsuarios, setLUsuarios] = useState<iLUsuarios[]>([]);
 
-  // Select List
-  const [privilegioSelect, setPrivilegioSelect] = useState<{ dPrivilegio: iLPrivilegio[] }>({ dPrivilegio: [] });
-  const [personaSelect, setPersonaSelect] = useState<{ dPersona: iLPersona[] }>({ dPersona: [] });
 
+  const [lCategoria, setLCategoria] = useState<iLCategoria[]>([]);
 
   // ||||| EVENTOS  ||||||||
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,67 +28,32 @@ function CrearUsuario() {
     }));
   };
 
-  // SelectChangeEvent
-  const handleChangeSelect = (event: SelectChangeEvent) => {
-    const { name, value } = event.target;
-    setFormValues((prevValues) => ({
-      ...prevValues,
-      [name]: value,
-    }));
-  };
-
-
-
   // ||||| RECEPCION DE DATOS |||||
-  const selectPersona = () => {
+  const getCategoria = () => {
     // Crear o modificar equipo
-    fetch(`${URL_API}/select/seguridad`)
+    fetch(`${URL_API}/categoria/list`)
       .then(resp => resp.json())
-      .then((result: iLPersona[]) => {
-        setPersonaSelect({
-          "dPersona": result
-        });
-      })
-  }
-
-  const selectPrivilegio = () => {
-    // Crear o modificar equipo
-    fetch(`${URL_API}/select/privilegio`)
-      .then(resp => resp.json())
-      .then((result: iLPrivilegio[]) => {
-        setPrivilegioSelect({
-          "dPrivilegio": result
-        });
-      })
-  }
-
-  const getUsuario = () => {
-    // Crear o modificar equipo
-    fetch(`${URL_API}/usuario/list`)
-      .then(resp => resp.json())
-      .then((result: iLUsuarios[]) => {
+      .then((result: iLCategoria[]) => {
         if (result.length > 0) {
-          setLUsuarios(result);
+          setLCategoria(result);
         }
       })
   }
 
 
-
   // ||||| ENVIOS DE DATOS |||||
+
   // event: React.FormEvent<HTMLFormElement>
   const SaveChanged = () => {
     // Crear o modificar
-    fetch(`${URL_API}/usuario/create`, {
+    fetch(`${URL_API}/categoria/create`, {
       method: "POST",
       headers: {
         "content-type": "application/json;charset=UTF-8",
       },
       body: JSON.stringify({
-        "ID_USUARIO": formValues.ID_USUARIO,
-        "ID_PERSONA": formValues.ID_PERSONA,
-        "ID_PRIVILEGIO": formValues.ID_PRIVILEGIO,
-        "CONTRASENIA": formValues.CONTRASENIA
+        "ID_CATEGORIA": formValues.ID_CATEGORIA,
+        "NOM_CATEGORIA": formValues.NOM_CATEGORIA.trim()
       }),
     })
       .then(resp => resp.json())
@@ -110,10 +67,8 @@ function CrearUsuario() {
             // Limpiar inputs
             if (result.statusCode === "201" || result.statusCode === "202") {
               setFormValues({
-                ID_USUARIO: "0",
-                ID_PERSONA: personaSelect.dPersona.length > 0 ? personaSelect.dPersona[0].ID_PERSONA : "",
-                ID_PRIVILEGIO: privilegioSelect.dPrivilegio.length > 0 ? privilegioSelect.dPrivilegio[0].ID_PRIVILEGIO : "",
-                CONTRASENIA: ""
+                ID_CATEGORIA: "0",
+                NOM_CATEGORIA: ''
               });
             }
           }
@@ -127,20 +82,19 @@ function CrearUsuario() {
         })
       )
       .finally(() => {
-        getUsuario();
+        getCategoria();
       })
   }
 
+
   const handleEditClick = (id: GridRowId) => () => {
-    let itemSelected = lUsuarios.find(item => item.ID_USUARIO.toString() === id.toString());
+    let itemSelected = lCategoria.find(item => item.ID_CATEGORIA.toString() === id.toString());
 
     setFormValues({
       ...formValues,
-      "ID_USUARIO": itemSelected?.ID_USUARIO || "0",
-      "ID_PERSONA": itemSelected?.ID_PERSONA || "0",
-      "ID_PRIVILEGIO": itemSelected?.ID_PRIVILEGIO || "0",
-      "CONTRASENIA": itemSelected?.CONTRASENIA || ""
-    });
+      "ID_CATEGORIA": itemSelected?.ID_CATEGORIA || "0",
+      "NOM_CATEGORIA": itemSelected?.NOM_CATEGORIA || ""
+    })
   }
 
 
@@ -155,13 +109,13 @@ function CrearUsuario() {
     })
       .then((resp) => {
         if (resp.isConfirmed) {
-          fetch(`${URL_API}/usuario/delete`, {
+          fetch(`${URL_API}/categoria/delete`, {
             method: "POST",
             headers: {
               "content-type": "application/json;charset=UTF-8",
             },
             body: JSON.stringify({
-              "ID_USUARIO": id
+              "ID_CATEGORIA": id
             }),
           })
             .then(resp => resp.json())
@@ -172,7 +126,7 @@ function CrearUsuario() {
                 text: result.text
               });
             }).finally(() => {
-              getUsuario();
+              getCategoria();
             })
         }
       })
@@ -180,37 +134,20 @@ function CrearUsuario() {
 
 
   const gRows = () => {
-    let result: {
-      id: number,
-      number: number,
-      nombres: string,
-      apPaterno: string,
-      apMaterno: string,
-      documento: string,
-      codigo: string,
-      nomPrivilegio: string,
-      estado: string,
-      state: string
-    }[] = [];
-    lUsuarios && lUsuarios.forEach((item, index) => {
+    let result: { id: number, number: number, nombre: string, estado: string, state: string }[] = [];
+    lCategoria && lCategoria.forEach((item, index) => {
       result.push({
-        id: parseInt(item.ID_USUARIO),
+        id: parseInt(item.ID_CATEGORIA),
         number: index + 1,
-        nombres: item.NOMBRES || "-",
-        apPaterno: item.APPATERNO,
-        apMaterno: item.APMATERNO,
-        documento: item.DOCUMENTO,
-        codigo: item.CODIGO,
-        nomPrivilegio: item.NOMBRE_PRIVILEGIO,
+        nombre: item.NOM_CATEGORIA || "-",
         estado: item.ESTADO === "0" ? "ELIMINADO" : "ACTIVO",
         state: item.ESTADO
       });
     }
     )
+
     return result;
   }
-
-
 
 
   // ||||| MINICOMPONENTES ||||||
@@ -232,12 +169,8 @@ function CrearUsuario() {
   };
 
   useEffect(() => {
-    selectPersona();
-    selectPrivilegio();
-    getUsuario();
+    getCategoria()
   }, []);
-
-
 
 
 
@@ -247,82 +180,39 @@ function CrearUsuario() {
       <Grid xs={4} className='container-duplex'>
         <form onSubmit={(e) => { e.preventDefault(); SaveChanged(); }}>
           <FormControl fullWidth>
-            <InputLabel id="selPersona">Persona</InputLabel>
-            <Select
-              labelId="selPersona"
-              name='ID_PERSONA'
-              value={formValues.ID_PERSONA}
-              label="Persona"
-              onChange={handleChangeSelect}
-            >
-              {
-                personaSelect?.dPersona &&
-                personaSelect?.dPersona.map((item, index) => (
-                  <MenuItem key={index} value={item.ID_PERSONA}>{item.NOMBRES}</MenuItem>
-                ))
-              }
-            </Select>
-          </FormControl>
-          <br />
-          <br />
-          <FormControl fullWidth>
-            <InputLabel id="selPrivilegio">Privilegio</InputLabel>
-            <Select
-              labelId="selPrivilegio"
-              name='ID_PRIVILEGIO'
-              value={formValues.ID_PRIVILEGIO}
-              label="Privilegio"
-              onChange={handleChangeSelect}
-            >
-              {
-                privilegioSelect?.dPrivilegio &&
-                privilegioSelect?.dPrivilegio.map((item, index) => (
-                  <MenuItem key={index} value={item.ID_PRIVILEGIO}>{item.NOM_PRIVILEGIO}</MenuItem>
-                ))
-              }
-            </Select>
-          </FormControl>
-          <br />
-          <br />
-          <FormControl fullWidth>
             <TextField
               required
-              name="CONTRASENIA"
-              label="CONTRASENIA"
+              name="NOM_CATEGORIA"
+              label="Nombre del Categoria"
               placeholder=''
               autoComplete='off'
               inputProps={{ maxLength: 100 }}
-              value={formValues.CONTRASENIA}
+              value={formValues.NOM_CATEGORIA}
               onChange={handleChange}
             />
             <br />
-          </FormControl>
-          <br />
-          <br />
-          <FormControl fullWidth>
             <Button
               type="submit"
               variant="contained"
+              color="success"
               style={{ backgroundColor: "#9692F5", maxWidth: 250, fontWeight: "bold", margin: "auto" }}
             >
               {
-                formValues.ID_USUARIO !== "0" ?
+                formValues.ID_CATEGORIA !== "0" ?
                   "Actualizar" : "Registrar"
               }
             </Button>
             <br />
             {
-              formValues.ID_USUARIO !== "0" &&
+              formValues.ID_CATEGORIA !== "0" &&
               <Button
                 type="button"
                 variant="contained"
                 color="warning"
                 onClick={() => {
                   setFormValues({
-                    ID_USUARIO: "0",
-                    ID_PERSONA: '',
-                    ID_PRIVILEGIO: '',
-                    CONTRASENIA: ''
+                    ID_CATEGORIA: "0",
+                    NOM_CATEGORIA: ''
                   });
                 }}
                 style={{ maxWidth: 250, fontWeight: "bold", margin: "auto" }}
@@ -337,13 +227,8 @@ function CrearUsuario() {
         <DataGrid
           editMode="row"
           columns={[
-            { field: "number", headerName: "N°", minWidth: 50 },
-            { field: "documento", headerName: 'DNI', minWidth: 100 },
-            { field: "codigo", headerName: 'CODIGO', minWidth: 100 },
-            { field: "nombres", headerName: 'NOMBRES', minWidth: 200 },
-            { field: "apPaterno", headerName: 'AP. PATERNO', minWidth: 150 },
-            { field: "apMaterno", headerName: 'AP. MATERNO', minWidth: 150 },
-            { field: "nomPrivilegio", headerName: 'PRIVILEGIO', minWidth: 200 },
+            { field: "number", headerName: "N°" },
+            { field: "nombre", headerName: 'NOMBRE CATEGORIA', minWidth: 200 },
             { field: "estado", headerName: 'ESTADO', minWidth: 150 },
             {
               field: 'actions',
@@ -385,4 +270,4 @@ function CrearUsuario() {
   )
 }
 
-export default CrearUsuario
+export default CrearCategoria

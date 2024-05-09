@@ -2,22 +2,22 @@ import { useState, useEffect } from 'react';
 import { Button, FormControl, TextField } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2/Grid2';
 import { DataGrid, GridActionsCellItem, GridRowClassNameParams, GridRowId, GridToolbarContainer, GridToolbarExport, esES } from '@mui/x-data-grid';
-import { iLPrivilegio, iResponse } from '../../iType';
+import { iLTipoVehiculo, iResponse } from '../../iType';
 import { URL_API } from '../../config';
 import Swal, { SweetAlertIcon } from 'sweetalert2';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 
-function CrearPrivilegio() {
+function CrearTipoVehiculo() {
 
     const [formValues, setFormValues] = useState({
-        ID_PRIVILEGIO: "0",
-        NOM_PRIVILEGIO: ""
+        ID_TIPO_VEHICULO: "0",
+        NOM_TIPO_VEHICULO: ""
     });
 
 
 
-    const [lPrivilegio, setLPrivilegio] = useState<iLPrivilegio[]>([]);
+    const [lTipoVehiculo, setLTipoVehiculo] = useState<iLTipoVehiculo[]>([]);
 
     // ||||| EVENTOS  ||||||||
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,13 +29,13 @@ function CrearPrivilegio() {
     };
 
     // ||||| RECEPCION DE DATOS |||||
-    const getPrivilegio = () => {
+    const getTipoVehiculo = () => {
         // Crear o modificar equipo
-        fetch(`${URL_API}/privilegio/list`)
+        fetch(`${URL_API}/vehiculo/list`)
             .then(resp => resp.json())
-            .then((result: iLPrivilegio[]) => {
+            .then((result: iLTipoVehiculo[]) => {
                 if (result.length > 0) {
-                    setLPrivilegio(result);
+                    setLTipoVehiculo(result);
                 }
             })
     }
@@ -46,14 +46,14 @@ function CrearPrivilegio() {
   // event: React.FormEvent<HTMLFormElement>
   const SaveChanged = () => {
     // Crear o modificar
-    fetch(`${URL_API}/privilegio/create`, {
+    fetch(`${URL_API}/vehiculo/create`, {
       method: "POST",
       headers: {
         "content-type": "application/json;charset=UTF-8",
       },
       body: JSON.stringify({
-        "ID_PRIVILEGIO": formValues.ID_PRIVILEGIO,
-        "NOM_PRIVILEGIO": formValues.NOM_PRIVILEGIO.trim()
+        "ID_TIPO_VEHICULO": formValues.ID_TIPO_VEHICULO,
+        "NOM_TIPO_VEHICULO": formValues.NOM_TIPO_VEHICULO.trim()
       }),
     })
       .then(resp => resp.json())
@@ -67,8 +67,8 @@ function CrearPrivilegio() {
             // Limpiar inputs
             if (result.statusCode === "201" || result.statusCode === "202") {
               setFormValues({
-                ID_PRIVILEGIO: "0",
-                NOM_PRIVILEGIO: ''
+                ID_TIPO_VEHICULO: "0",
+                NOM_TIPO_VEHICULO: ''
               });
             }
           }
@@ -82,18 +82,18 @@ function CrearPrivilegio() {
         })
       )
       .finally(() => {
-        getPrivilegio();
+        getTipoVehiculo();
       })
   }
 
   
   const handleEditClick = (id: GridRowId) => () => {
-    let itemSelected = lPrivilegio.find(item => item.ID_PRIVILEGIO.toString() === id.toString());
+    let itemSelected = lTipoVehiculo.find(item => item.ID_TIPO_VEHICULO.toString() === id.toString());
 
     setFormValues({
       ...formValues,
-      "ID_PRIVILEGIO": itemSelected?.ID_PRIVILEGIO || "0",
-      "NOM_PRIVILEGIO": itemSelected?.NOM_PRIVILEGIO || ""
+      "ID_TIPO_VEHICULO": itemSelected?.ID_TIPO_VEHICULO || "0",
+      "NOM_TIPO_VEHICULO": itemSelected?.NOM_TIPO_VEHICULO || ""
     })
   }
 
@@ -109,13 +109,13 @@ function CrearPrivilegio() {
     })
       .then((resp) => {
         if (resp.isConfirmed) {
-          fetch(`${URL_API}/privilegio/delete`, {
+          fetch(`${URL_API}/vehiculo/delete`, {
             method: "POST",
             headers: {
               "content-type": "application/json;charset=UTF-8",
             },
             body: JSON.stringify({
-              "ID_PRIVILEGIO": id
+              "ID_TIPO_VEHICULO": id
             }),
           })
             .then(resp => resp.json())
@@ -126,7 +126,7 @@ function CrearPrivilegio() {
                 text: result.text
               });
             }).finally(() => {
-              getPrivilegio();
+              getTipoVehiculo();
             })
         }
       })
@@ -135,11 +135,11 @@ function CrearPrivilegio() {
   
   const gRows = () => {
     let result: { id: number, number: number, nombre: string, estado: string, state: string }[] = [];
-    lPrivilegio && lPrivilegio.forEach((item, index) => {
+    lTipoVehiculo && lTipoVehiculo.forEach((item, index) => {
       result.push({
-        id: parseInt(item.ID_PRIVILEGIO),
+        id: parseInt(item.ID_TIPO_VEHICULO),
         number: index + 1,
-        nombre: item.NOM_PRIVILEGIO || "-",
+        nombre: item.NOM_TIPO_VEHICULO || "-",
         estado: item.ESTADO === "0" ? "ELIMINADO" : "ACTIVO",
         state: item.ESTADO
       });
@@ -169,7 +169,7 @@ function CrearPrivilegio() {
   };
 
   useEffect(() => {
-    getPrivilegio()
+    getTipoVehiculo()
   }, []);
 
 
@@ -182,12 +182,12 @@ function CrearPrivilegio() {
           <FormControl fullWidth>
             <TextField
               required
-              name="NOM_PRIVILEGIO"
-              label="Nombre del Privilegio"
+              name="NOM_TIPO_VEHICULO"
+              label="Nombre del TipoVehiculo"
               placeholder=''
               autoComplete='off'
               inputProps={{ maxLength: 100 }}
-              value={formValues.NOM_PRIVILEGIO}
+              value={formValues.NOM_TIPO_VEHICULO}
               onChange={handleChange}
             />
             <br />
@@ -198,21 +198,21 @@ function CrearPrivilegio() {
               style={{ backgroundColor: "#9692F5", maxWidth: 250, fontWeight: "bold", margin: "auto" }}
               >
               {
-                formValues.ID_PRIVILEGIO !== "0" ?
+                formValues.ID_TIPO_VEHICULO !== "0" ?
                   "Actualizar" : "Registrar"
               }
             </Button>
             <br />
             {
-              formValues.ID_PRIVILEGIO !== "0" &&
+              formValues.ID_TIPO_VEHICULO !== "0" &&
               <Button
                 type="button"
                 variant="contained"
                 color="warning"
                 onClick={() => {
                   setFormValues({
-                    ID_PRIVILEGIO: "0",
-                    NOM_PRIVILEGIO: ''
+                    ID_TIPO_VEHICULO: "0",
+                    NOM_TIPO_VEHICULO: ''
                   });
                 }}
                 style={{ maxWidth: 250, fontWeight: "bold", margin: "auto" }}
@@ -228,7 +228,7 @@ function CrearPrivilegio() {
           editMode="row"
           columns={[
             { field: "number", headerName: "N°" },
-            { field: "nombre", headerName: 'NOM_PRIVILEGIO', minWidth: 200 },
+            { field: "nombre", headerName: 'NOMBRE VEHICULO', minWidth: 200 },
             { field: "estado", headerName: 'ESTADO', minWidth: 150 },
             {
               field: 'actions',
@@ -270,4 +270,4 @@ function CrearPrivilegio() {
   )
 }
 
-export default CrearPrivilegio
+export default CrearTipoVehiculo

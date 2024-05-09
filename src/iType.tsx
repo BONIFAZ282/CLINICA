@@ -6,16 +6,29 @@ interface iResponse {
   data: any[];
 }
 
+
 interface iLUsuarios {
   ID_USUARIO: string;
-  ID_TRABAJADOR: string;
+  ID_PERSONA: string;
   ID_PRIVILEGIO: string;
+  ID_SEGURIDAD: string;
   NOMBRE_PRIVILEGIO: string;
   CONTRASENIA: string;
   NOMBRES: string;
   APPATERNO: string;
   APMATERNO: string;
   DOCUMENTO: string;
+  CODIGO: string;
+  ESTADO: string;
+}
+
+interface iLPersona{
+  ID_PERSONA: string;
+  NOMBRES: string;
+  APPATERNO: string;
+  APMATERNO: string;
+  DOCUMENTO: string;
+  CARGO: string;
   ESTADO: string;
 }
 
@@ -42,7 +55,31 @@ interface iLTrabajador {
 
 interface iLPrivilegio {
   ID_PRIVILEGIO: string;
-  DESCRIPCION: string;
+  NOM_PRIVILEGIO: string;
+  ESTADO: string;
+}
+
+interface iLCategoria {
+  ID_CATEGORIA: string;
+  NOM_CATEGORIA: string;
+  ESTADO: string;
+}
+
+
+interface iLTipoVehiculo {
+  ID_TIPO_VEHICULO: string;
+  NOM_TIPO_VEHICULO: string;
+  ESTADO: string;
+}
+
+interface iLSeguridad {
+  ID_SEGURIDAD: string;
+  ID_PERSONA: string;
+  NOMBRES: string;
+  APPATERNO: string;
+  APMATERNO: string;
+  DOCUMENTO: string;
+  CODIGO: string;
   ESTADO: string;
 }
 
@@ -88,8 +125,12 @@ export type {
   iLCliente,
   iLProcedimiento,
   iLPrivilegio,
+  iLCategoria,
+  iLTipoVehiculo,
+  iLSeguridad,
   iLUsuarios,
   iLTrabajador,
+  iLPersona,
   iLTipoPago,
   iLConsulta,
   iResponse,

@@ -11,8 +11,8 @@ import Box from "@mui/material/Box";
 import Grid from '@mui/material/Grid';
 import Typography from "@mui/material/Typography";
 import { createTheme, responsiveFontSizes, ThemeProvider } from "@mui/material/styles";
-import Doctora from '../../DOCTORA.jpg';
-import Logo from "../../logo.jpg";
+import Doctora from '../../FUERA.jpeg';
+import Logo from "../../logo_escaner.png";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import { folderDefault, URL_API } from "../../config";
@@ -29,10 +29,10 @@ function Copyright(props: any) {
       {"Copyright ©"}
       <Link
         color="inherit"
-        href="https://www.facebook.com/Dra.ArianaOncoyRosales"
+        href="https://www.utp.edu.pe/ica"
         target="__blank"
       >
-        {" PRENATALIA "}
+        {" UTP "}
       </Link>
       {`${new Date().getFullYear()}.`}
     </Typography>
@@ -43,10 +43,10 @@ function Copyright(props: any) {
 let defaultTheme = createTheme({
   palette: {
     primary: {
-      main: '#FFA5EE',
+      main: '#6B68E8',
     },
     secondary: {
-      main: '#FFA5EE',
+      main: '#6B68E8',
     },
   },
 });
@@ -181,7 +181,7 @@ export default function SignInSide() {
                 type="submit"
                 fullWidth
                 variant="contained"
-                style={{ background: "#FFB6D6" }}
+                style={{ background: "#6B68E8" }}
                 sx={{ mt: 3, mb: 2 }}
               >
                 ENTRAR

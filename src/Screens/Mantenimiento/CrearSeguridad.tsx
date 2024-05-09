@@ -2,21 +2,25 @@ import { useState, useEffect } from 'react';
 import { Button, FormControl, TextField } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2/Grid2';
 import { DataGrid, GridActionsCellItem, GridRowClassNameParams, GridRowId, GridToolbarContainer, GridToolbarExport, esES } from '@mui/x-data-grid';
-import { iLTipoPago, iResponse } from '../../iType';
+import { iLSeguridad, iResponse } from '../../iType';
 import { URL_API } from '../../config';
 import Swal, { SweetAlertIcon } from 'sweetalert2';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 
+function CrearSeguridad() {
 
-function CrearMetodoPago() {
 
     const [formValues, setFormValues] = useState({
-        ID_TIPO_PAGO: "0",
-        DESCRIPCION: ""
+        ID_SEGURIDAD: "0",
+        NOMBRES: "",
+        APPATERNO: "",
+        APMATERNO: "",
+        DOCUMENTO: "",
+        CODIGO: ""
     });
 
-    const [lPago, setLPago] = useState<iLTipoPago[]>([]);
+    const [lSeguridad, setLSeguridad] = useState<iLSeguridad[]>([]);
 
     // ||||| EVENTOS  ||||||||
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -28,16 +32,18 @@ function CrearMetodoPago() {
     };
 
     // ||||| RECEPCION DE DATOS |||||
-    const getTipoPago = () => {
+    const getSeguridad = () => {
         // Crear o modificar equipo
-        fetch(`${URL_API}/tpago/list`)
+        fetch(`${URL_API}/seguridad/list`)
             .then(resp => resp.json())
-            .then((result: iLTipoPago[]) => {
+            .then((result: iLSeguridad[]) => {
                 if (result.length > 0) {
-                    setLPago(result);
+                    setLSeguridad(result);
                 }
             })
     }
+
+
 
 
     // ||||| ENVIOS DE DATOS |||||
@@ -45,14 +51,18 @@ function CrearMetodoPago() {
     // event: React.FormEvent<HTMLFormElement>
     const SaveChanged = () => {
         // Crear o modificar
-        fetch(`${URL_API}/tpago/create`, {
+        fetch(`${URL_API}/seguridad/create`, {
             method: "POST",
             headers: {
                 "content-type": "application/json;charset=UTF-8",
             },
             body: JSON.stringify({
-                "ID_TIPO_PAGO": formValues.ID_TIPO_PAGO,
-                "DESCRIPCION": formValues.DESCRIPCION.trim()
+                "ID_SEGURIDAD": formValues.ID_SEGURIDAD,
+                "NOMBRES": formValues.NOMBRES.trim(),
+                "APPATERNO": formValues.APPATERNO.trim(),
+                "APMATERNO": formValues.APMATERNO.trim(),
+                "DOCUMENTO": formValues.DOCUMENTO.trim(),
+                "CODIGO": formValues.CODIGO.trim()
             }),
         })
             .then(resp => resp.json())
@@ -66,8 +76,12 @@ function CrearMetodoPago() {
                         // Limpiar inputs
                         if (result.statusCode === "201" || result.statusCode === "202") {
                             setFormValues({
-                                ID_TIPO_PAGO: "0",
-                                DESCRIPCION: ''
+                                ID_SEGURIDAD: "0",
+                                NOMBRES: '',
+                                APPATERNO: '',
+                                APMATERNO: '',
+                                DOCUMENTO: '',
+                                CODIGO: ''
                             });
                         }
                     }
@@ -81,18 +95,23 @@ function CrearMetodoPago() {
                 })
             )
             .finally(() => {
-                getTipoPago();
+                getSeguridad();
             })
     }
 
 
     const handleEditClick = (id: GridRowId) => () => {
-        let itemSelected = lPago.find(item => item.ID_TIPO_PAGO.toString() === id.toString());
+        let itemSelected = lSeguridad.find(item => item.ID_SEGURIDAD.toString() === id.toString());
 
         setFormValues({
             ...formValues,
-            "ID_TIPO_PAGO": itemSelected?.ID_TIPO_PAGO || "0",
-            "DESCRIPCION": itemSelected?.DESCRIPCION || ""
+            "ID_SEGURIDAD": itemSelected?.ID_SEGURIDAD || "0",
+            "NOMBRES": itemSelected?.NOMBRES || "",
+            "APPATERNO": itemSelected?.APPATERNO || "",
+            "APMATERNO": itemSelected?.APMATERNO || "",
+            "DOCUMENTO": itemSelected?.DOCUMENTO || "",
+            "CODIGO": itemSelected?.CODIGO || ""
+
         })
     }
 
@@ -109,13 +128,13 @@ function CrearMetodoPago() {
         })
             .then((resp) => {
                 if (resp.isConfirmed) {
-                    fetch(`${URL_API}/tpago/delete`, {
+                    fetch(`${URL_API}/seguridad/delete`, {
                         method: "POST",
                         headers: {
                             "content-type": "application/json;charset=UTF-8",
                         },
                         body: JSON.stringify({
-                            "ID_TIPO_PAGO": id
+                            "ID_SEGURIDAD": id
                         }),
                     })
                         .then(resp => resp.json())
@@ -126,7 +145,7 @@ function CrearMetodoPago() {
                                 text: result.text
                             });
                         }).finally(() => {
-                            getTipoPago();
+                            getSeguridad();
                         })
                 }
             })
@@ -134,12 +153,16 @@ function CrearMetodoPago() {
 
 
     const gRows = () => {
-        let result: { id: number, number: number, descripcion: string, estado: string, state: string }[] = [];
-        lPago && lPago.forEach((item, index) => {
+        let result: { id: number, number: number, nombres: string, appterno: string, apmaterno: string, dni: string, codigo: string, estado: string, state: string }[] = [];
+        lSeguridad && lSeguridad.forEach((item, index) => {
             result.push({
-                id: parseInt(item.ID_TIPO_PAGO),
+                id: parseInt(item.ID_SEGURIDAD),
                 number: index + 1,
-                descripcion: item.DESCRIPCION || "-",
+                nombres: item.NOMBRES || "-",
+                appterno: item.APPATERNO || "-",
+                apmaterno: item.APMATERNO || "-",
+                dni: item.DOCUMENTO || "-",
+                codigo: item.CODIGO || "-",
                 estado: item.ESTADO === "0" ? "ELIMINADO" : "ACTIVO",
                 state: item.ESTADO
             });
@@ -169,10 +192,8 @@ function CrearMetodoPago() {
     };
 
     useEffect(() => {
-        getTipoPago()
+        getSeguridad()
     }, []);
-
-
 
     return (
         <Grid container spacing={2} justifyContent={"center"} id='crudAll'>
@@ -181,12 +202,56 @@ function CrearMetodoPago() {
               <FormControl fullWidth>
                 <TextField
                   required
-                  name="DESCRIPCION"
-                  label="Tipo de Pago"
+                  name="NOMBRES"
+                  label="Nombres"
                   placeholder=''
                   autoComplete='off'
                   inputProps={{ maxLength: 100 }}
-                  value={formValues.DESCRIPCION}
+                  value={formValues.NOMBRES}
+                  onChange={handleChange}
+                />
+                <br />
+                <TextField
+                  required
+                  name="APPATERNO"
+                  label="Apellido Paterno"
+                  placeholder=''
+                  autoComplete='off'
+                  inputProps={{ maxLength: 100 }}
+                  value={formValues.APPATERNO}
+                  onChange={handleChange}
+                />
+                <br />
+                <TextField
+                  required
+                  name="APMATERNO"
+                  label="Apellido Materno"
+                  placeholder=''
+                  autoComplete='off'
+                  inputProps={{ maxLength: 100 }}
+                  value={formValues.APMATERNO}
+                  onChange={handleChange}
+                />
+                <br />
+                <TextField
+                  required
+                  name="DOCUMENTO"
+                  label="Documento"
+                  placeholder=''
+                  autoComplete='off'
+                  inputProps={{ maxLength: 100 }}
+                  value={formValues.DOCUMENTO}
+                  onChange={handleChange}
+                />
+                <br />
+                <TextField
+                  required
+                  name="CODIGO"
+                  label="Codigo"
+                  placeholder=''
+                  autoComplete='off'
+                  inputProps={{ maxLength: 100 }}
+                  value={formValues.CODIGO}
                   onChange={handleChange}
                 />
                 <br />
@@ -194,24 +259,29 @@ function CrearMetodoPago() {
                   type="submit"
                   variant="contained"
                   color="success"
-                  style={{ backgroundColor: "#D9A3FF", maxWidth: 250, fontWeight: "bold", margin: "auto" }}
-                  >
+                  style={{ backgroundColor: "#9692F5", maxWidth: 250, fontWeight: "bold", margin: "auto" }}
+                >
                   {
-                    formValues.ID_TIPO_PAGO !== "0" ?
+                    formValues.ID_SEGURIDAD !== "0" ?
                       "Actualizar" : "Registrar"
                   }
                 </Button>
                 <br />
                 {
-                  formValues.ID_TIPO_PAGO !== "0" &&
+                  formValues.ID_SEGURIDAD !== "0" &&
                   <Button
                     type="button"
                     variant="contained"
                     color="warning"
                     onClick={() => {
                       setFormValues({
-                        ID_TIPO_PAGO: "0",
-                        DESCRIPCION: ''
+                        ID_SEGURIDAD: "0",
+                        NOMBRES: '',
+                        APPATERNO: '',
+                        APMATERNO: '',
+                        DOCUMENTO: '',
+                        CODIGO: ''
+
                       });
                     }}
                     style={{ maxWidth: 250, fontWeight: "bold", margin: "auto" }}
@@ -227,7 +297,11 @@ function CrearMetodoPago() {
               editMode="row"
               columns={[
                 { field: "number", headerName: "N°" },
-                { field: "descripcion", headerName: 'DESCRIPCION', minWidth: 200 },
+                { field: "nombres", headerName: 'NOMBRES', minWidth: 200 },
+                { field: "appterno", headerName: 'APELLIDO PATERNO', minWidth: 200 },
+                { field: "apmaterno", headerName: 'APELLIDO MATERNO', minWidth: 200 },
+                { field: "dni", headerName: 'DOCUMENTO', minWidth: 200 },
+                { field: "codigo", headerName: 'CODIGO', minWidth: 200 },
                 { field: "estado", headerName: 'ESTADO', minWidth: 150 },
                 {
                   field: 'actions',
@@ -269,4 +343,4 @@ function CrearMetodoPago() {
       )
     }
 
-export default CrearMetodoPago
+export default CrearSeguridad

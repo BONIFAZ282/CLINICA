@@ -84,29 +84,19 @@ function Navbar() {
             icon={faUserShield}
           />
           <ItemSubCategory
-            link="/mantenimiento/cliente"
-            title="Cliente"
-            icon={faUser}
-          />
-          <ItemSubCategory
-            link="/mantenimiento/trabajadores"
-            title="Trabajador"
-            icon={faUserNurse} // Cambié faGavel por faUserNurse
-          />
-          <ItemSubCategory
-            link="/mantenimiento/procedimientos"
-            title="Procedimiento"
-            icon={faClipboardList} // Cambié faGavel por faClipboardList
-          />
-          <ItemSubCategory
-            link="/mantenimiento/mpagos"
-            title="Metodo de Pago"
+            link="/mantenimiento/categorias"
+            title="Categorias"
             icon={faMoneyCheckAlt} // Cambié faGavel por faMoneyCheckAlt
           />
           <ItemSubCategory
-            link="/mantenimiento/consultas"
-            title="Consultas"
-            icon={faClipboardList} // Cambié faGavel por faClipboardList
+            link="/mantenimiento/tipoVehiculo"
+            title="Tipo Vehiculo"
+            icon={faMoneyCheckAlt} // Cambié faGavel por faMoneyCheckAlt
+          />
+          <ItemSubCategory
+            link="/mantenimiento/seguridad"
+            title="Seguridad"
+            icon={faMoneyCheckAlt} // Cambié faGavel por faMoneyCheckAlt
           />
         </ Collapse>
       </>

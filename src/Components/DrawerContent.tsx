@@ -76,7 +76,7 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 const defaultTheme = createTheme({
   palette: {
     primary: {
-      main: "#FFA5EE",
+      main: "#6B68E8",
     },
     secondary: {
       main: green[500],
